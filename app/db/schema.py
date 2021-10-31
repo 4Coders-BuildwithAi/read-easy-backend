@@ -53,3 +53,5 @@ class User(db.Model):
             "email": self.email,
             "role": self.role,
         }
+
+
