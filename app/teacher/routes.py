@@ -2,7 +2,7 @@ from flask import Flask, Blueprint, jsonify, request, abort, redirect, render_te
 from flask import current_app
 
 
-import os
+import docx2txt
 
 from werkzeug.utils import secure_filename
 
@@ -19,7 +19,7 @@ def upload_file(course_id):
     if request.method == "POST":
         f = request.files["file"]
         f.save((f.filename))
-        text = readpdf()
+        text = docx2txt.process("sample.docx")
         print(course_id)
         course = Course.query.filter(Course.id==course_id).first()
         course.content = text
