@@ -18,8 +18,10 @@ import PyPDF2
 def upload_file(course_id):
     if request.method == "POST":
         f = request.files["file"]
-        f.save((f.filename))
-        text = docx2txt.process("sample.docx")
+        #Save file in a specific folder
+        
+        f.save(f"app/static/{secure_filename(f.filename)}")
+        text = docx2txt.process(f"app/static/{secure_filename(f.filename)}")
         print(course_id)
         course = Course.query.filter(Course.id==course_id).first()
         course.content = text
