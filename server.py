@@ -5,12 +5,14 @@ from flask_script import Manager
 
 from app.auth.routes import auth
 from app.student.routes import student
+from app.teacher.routes import teacher
 
 
 app = Flask(__name__)
 setup_db(app)
 app.register_blueprint(auth)
 app.register_blueprint(student)
+app.register_blueprint(teacher)
 @app.route('/')
 
 def hello_world():
