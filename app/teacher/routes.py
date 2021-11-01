@@ -1,69 +1,56 @@
 from flask import Flask, Blueprint, jsonify, request, abort, redirect, render_template
+from flask import current_app
+
 
 import os
 
 from werkzeug.utils import secure_filename
 
+from app.db.schema import Course
+
 teacher = Blueprint("teacher", __name__)
 
-# ALLOWED_EXTENSIONS = {'pdf'}
-# def allowed_file(filename):
-#    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-teacher.config["FILE_UPLOADS"] = "./../static/uploads/pdf"
-teacher.config["ALLOWED_EXTENSIONS"] = ["PDF"]
+import PyPDF2 
 
-def allowed_files(filename):
 
-    if not "." in filename:
-        return False
-
-    ext = filename.rsplit(".",1)[1]
-
-    if ext.upper() in teacher.config["ALLOWED_EXTENSIONS"]:
-        return True
-    else:
-        return False
-
-@teacher.route("/uploadMaterial", methods=["POST"])
-def uploadMaterial():
-
+@teacher.route("/upload/<course_id>", methods=["POST"])
+def upload_file(course_id):
     if request.method == "POST":
-
-        if request.files:
-
-            file = request.files["file"]
-
-            if file.filename =="":
-                print("Invalid")
-                return redirect(request.url)
-
-            if not allowed_files(file.filename):
-                print("Invalid File")
-                return redirect(request.url)
-
-            else:
-                filename = secure_filename(file.filename)
-                
-                file.save(os.path.join(teacher.config["FILE_UPLOADS"], filename))
-
-            print("File Saved")
-
-            return redirect(request.url)
-    #File Uploading
-
-    # if request.method == 'POST':
-    #     if 'file' not in request.files:
-    #         print('File not found.')
-    #         return redirect(request.url)
-    #     file = request.files['file']
-    #     if file.filename == '':
-    #         print('No file selected')
-    #         return redirect(request.url)
-    #     if file and allowed_file(file.filename):
-    #         filename = secure_filename(file.filename):
-    #         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    #         process_file(os.path.join(app.config['UPLOAD_FOLDER'],filename), filename)
-    #         return redirect(url_for('uploaded_file', filename=filename))
+        f = request.files["file"]
+        f.save((f.filename))
+        text = readpdf()
+        print(course_id)
+        course = Course.query.filter(Course.id==course_id).first()
+        course.content = text
+        course.update()
+        return jsonify({"message": "success", "text": text})
     
-    return render_template() 
+def readpdf():
+    filename = 'sample.pdf'
+    pdfFileObj = open(filename,'rb')
+    pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
+    num_pages = pdfReader.numPages
+    count = 0
+    text = ""
+    while count < num_pages:
+        pageObj = pdfReader.getPage(count)
+        count +=1
+        text += pageObj.extractText()
+    if text != "":
+       text = text
+    
+    # Sanitize the text after pdf extraction
+    
+    
+    return text
+
+@teacher.route("/add-course", methods=["POST"])
+def add_course():
+    body = request.get_json()
+    content=""
+    filename=""
+    new_course = Course(content, body["title"],filename)
+    new_course.insert()
+    
+    return jsonify({"message": "success","id":new_course.id})

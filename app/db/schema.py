@@ -30,7 +30,7 @@ class User(db.Model):
     password = Column(String)
     role = Column(String)
 
-    def __init__(self, username, email, password,role):
+    def __init__(self, username, email, password, role):
         self.username = username
         self.email = email
         self.password = generate_password_hash(password)
@@ -55,3 +55,35 @@ class User(db.Model):
         }
 
 
+class Course(db.Model):
+    __tablename__ = "courses"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    content = Column(String)
+    title = Column(String)
+    filename = Column(String)
+
+    def __init__(self, content, title, filename):
+        self.content = content
+        self.title = title
+        self.filename = filename
+
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+
+    def format(self):
+        return {
+            "title": self.title,
+            "id": self.id,
+            "content": self.content,
+        }
+
+    def format_short(self):
+        return {
+            "title": self.title,
+            "id": self.id,
+        }
