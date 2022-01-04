@@ -45,7 +45,8 @@ def getcourse(id):
 @student.route("/ocr", methods=["POST"])
 def ocr():
     f = request.get_json()
-    imgstr = f["image"]
+    im = f["image"]
+    imgstr = im.encode('utf-8')
     with open("l.png","wb") as f:
         f.write(decodestring(imgstr))
 
