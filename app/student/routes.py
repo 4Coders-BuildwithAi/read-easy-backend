@@ -11,6 +11,7 @@ import os
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from PIL import Image , ImageOps
+from base64 import decodestring
 
 
 
@@ -43,27 +44,21 @@ def getcourse(id):
 
 @student.route("/ocr", methods=["POST"])
 def ocr():
-    f = request.files["file"]
-        #Save file in a specific folder
-        
-    f.save(f"app/images/{secure_filename(f.filename)}")
-    #open the image
+    f = request.get_json()
+    imgstr = f["image"]
+    with open("l.png","wb") as f:
+        f.write(decodestring(imgstr))
+
     img_height = 90
     img_width = 90
     class_names=['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
     model = tf.keras.models.load_model('ocr')
     img = tf.keras.preprocessing.image.load_img(
-    "app/images/{secure_filename(f.filename)}", target_size=(img_height, img_width)
+    "./l.png", target_size=(img_height, img_width)
     )
     img_array = tf.keras.preprocessing.image.img_to_array(img)
-    img_array = tf.expand_dims(img_array, 0) # Create a batch
+    img_array = tf.expand_dims(img_array, 0)
 
     predictions = model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
     return jsonify({"message": "success","prediction": class_names[np.argmax(score)]})
-    
-
-
-
-
-
